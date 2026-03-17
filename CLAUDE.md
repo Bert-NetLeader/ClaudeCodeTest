@@ -17,13 +17,19 @@ Each game is a **single self-contained HTML file** with embedded CSS and JS — 
 
 ## Git & GitHub Workflow
 
-Commit and push to GitHub after every meaningful change:
+**Commit and push after every meaningful unit of work** — a feature added, a bug fixed, a refactor completed. Never leave a session with uncommitted changes. This ensures work is never lost and any change can be reverted.
 
 ```bash
 git add <files>
 git commit -m "descriptive message"
 git push
 ```
+
+Commit message rules:
+- Use the imperative mood: "Add X", "Fix Y", "Refactor Z"
+- First line ≤ 72 characters; describe *what and why*, not *how*
+- Always append the co-author trailer:
+  `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
 
 Remote: `https://github.com/Bert-NetLeader/ClaudeCodeTest` (branch: `main`)
 
