@@ -27,7 +27,7 @@ h1 {
   letter-spacing: 6px;
 }
 
-/* ── MACHINE CABINET ───────────────────────────────────────── */
+/* ── MACHINE CABINET ─────────────────────────────────────── */
 .machine {
   background: #16213e;
   border: 3px solid #ffd700;
@@ -37,16 +37,12 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  width: 420px;
+  gap: 1.25rem;
+  width: 440px;
 }
 
-/* ── CREDIT / WIN DISPLAYS ─────────────────────────────────── */
-.display-row {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-}
+/* ── CREDIT / WIN DISPLAYS ──────────────────────────────── */
+.display-row { display: flex; gap: 0.75rem; width: 100%; }
 
 .display-box {
   flex: 1;
@@ -59,7 +55,6 @@ h1 {
   color: #888;
   letter-spacing: 1px;
 }
-
 .display-box .value {
   display: block;
   font-size: 1.4rem;
@@ -68,17 +63,49 @@ h1 {
   margin-top: 2px;
 }
 
-/* ── REELS ─────────────────────────────────────────────────── */
+/* ── BET SELECTOR ───────────────────────────────────────── */
+.bet-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.bet-label { font-size: 0.75rem; color: #555; letter-spacing: 1px; flex-shrink: 0; }
+
+.bet-btn {
+  flex: 1;
+  padding: 0.4rem 0;
+  background: #0a0a1a;
+  color: #666;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.bet-btn:hover:not(:disabled):not(.active) {
+  background: #1a1a3a;
+  color: #aaa;
+  border-color: #555;
+}
+.bet-btn.active {
+  background: #2a2010;
+  color: #ffd700;
+  border-color: #ffd700;
+}
+.bet-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* ── REELS ──────────────────────────────────────────────── */
 .reels-wrapper {
   background: #0a0a1a;
   border: 2px solid #333;
   border-radius: 12px;
   padding: 12px;
 }
-
 .reels { display: flex; gap: 10px; }
-
-.reel { display: flex; flex-direction: column; gap: 4px; }
+.reel  { display: flex; flex-direction: column; gap: 4px; }
 
 .cell {
   width: 88px;
@@ -93,11 +120,10 @@ h1 {
   transition: filter 0.12s;
 }
 
-/* Center row = active payline */
-.cell.center {
-  background: #1f1f42;
-  border-color: rgba(255, 80, 80, 0.55);
-}
+/* Subtle per-row tint indicates which payline owns that row */
+.cell.row-0 { border-color: rgba( 68, 170, 255, 0.22); }
+.cell.row-1 { border-color: rgba(255,  85,  85, 0.45); background: #1e1e42; }
+.cell.row-2 { border-color: rgba( 68, 238, 136, 0.22); }
 
 /* Symbol-specific overrides */
 .cell.bar-sym   { font-size: 1.25rem; font-weight: bold; color: #ffd700; letter-spacing: 2px; }
@@ -106,25 +132,46 @@ h1 {
 /* Spinning: blur all cells on the reel */
 .reel.spinning .cell { filter: blur(3px); }
 
-/* Win flash on center cells */
-.cell.center.flash { animation: cellflash 0.4s ease-in-out 3; }
-
-@keyframes cellflash {
-  0%, 100% { background: #1f1f42; border-color: rgba(255,80,80,0.55); }
-  50%       { background: #3a2a00; border-color: #ffd700; box-shadow: 0 0 14px #ffd700; }
+/* Win flash — color set via --flash-color CSS variable per cell */
+.cell.win-flash { animation: wflash 0.42s ease-in-out 3; }
+@keyframes wflash {
+  0%, 100% { box-shadow: none; }
+  50%       { border-color: var(--flash-color, #ffd700) !important;
+              box-shadow:   0 0 18px var(--flash-color, #ffd700);
+              background:   #252520; }
 }
 
-/* ── MESSAGE ───────────────────────────────────────────────── */
-.message {
-  font-size: 1.2rem;
+/* ── PAYLINE INDICATORS ─────────────────────────────────── */
+.payline-indicators { display: flex; gap: 0.4rem; align-items: center; }
+
+.pl-ind {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.72rem;
   font-weight: bold;
-  min-height: 1.8rem;
+  border: 1px solid currentColor;
+  letter-spacing: 1px;
+  opacity: 0.22;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+.pl-ind.lit { opacity: 1; box-shadow: 0 0 8px currentColor; }
+.pl-top { color: #44aaff; }
+.pl-mid { color: #ff5555; }
+.pl-bot { color: #44ee88; }
+.pl-d1  { color: #ffaa44; }
+.pl-d2  { color: #cc55ff; }
+
+/* ── MESSAGE ────────────────────────────────────────────── */
+.message {
+  font-size: 1.1rem;
+  font-weight: bold;
+  min-height: 1.6rem;
   text-align: center;
   letter-spacing: 1px;
 }
-.message.idle     { color: #555; }
+.message.idle     { color: #444; }
 .message.win      { color: #ffd700; }
-.message.lose     { color: #444; }
+.message.lose     { color: #3a3a3a; }
 .message.jackpot  { color: #ff4444; animation: jackpulse 0.5s infinite alternate; }
 .message.gameover { color: #ff6666; }
 
@@ -133,16 +180,9 @@ h1 {
   to   { text-shadow: 0 0 30px #ff4444, 0 0 60px #ff0000; }
 }
 
-/* ── CONTROLS ──────────────────────────────────────────────── */
-.controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  width: 100%;
-}
-
-.bet-label { font-size: 0.8rem; color: #555; letter-spacing: 1px; }
+/* ── SPIN BUTTON ────────────────────────────────────────── */
+.controls { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; }
+.hint { font-size: 0.68rem; color: #2a2a2a; }
 
 #spinBtn {
   width: 100%;
@@ -166,20 +206,19 @@ h1 {
 #spinBtn:active:not(:disabled) { transform: translateY(1px); }
 #spinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ── PAYTABLE ──────────────────────────────────────────────── */
+/* ── PAYTABLE ───────────────────────────────────────────── */
 .paytable {
-  border-top: 1px solid #222;
+  border-top: 1px solid #1e1e1e;
   padding-top: 1rem;
   width: 100%;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: #555;
   line-height: 1.9;
   text-align: center;
 }
-.paytable .pt-title  { color: #ffd700; font-size: 0.85rem; letter-spacing: 2px; }
-.paytable .jack-row  { color: #ff6666; }
-
-.hint { font-size: 0.7rem; color: #333; }
+.paytable .pt-title { color: #ffd700; font-size: 0.82rem; letter-spacing: 2px; }
+.paytable .jack-row { color: #ff6666; }
+.paytable .pl-note  { font-size: 0.68rem; color: #3a3a3a; margin-top: 0.2rem; }
 </style>
 </head>
 <body>
@@ -194,91 +233,124 @@ h1 {
     <div class="display-box">LAST WIN<span class="value" id="winVal">&#8212;</span></div>
   </div>
 
-  <!-- Reels (3 reels × 3 visible rows; center row is the payline) -->
+  <!-- Bet selector -->
+  <div class="bet-row">
+    <span class="bet-label">BET</span>
+    <button class="bet-btn" data-bet="1">1</button>
+    <button class="bet-btn" data-bet="5">5</button>
+    <button class="bet-btn active" data-bet="10">10</button>
+    <button class="bet-btn" data-bet="25">25</button>
+  </div>
+
+  <!-- Reels: 3 columns × 3 rows; row-1 (middle) is the center payline -->
   <div class="reels-wrapper">
     <div class="reels" id="reels">
       <div class="reel" id="reel-0">
-        <div class="cell"        id="c0-0">&#127826;</div>
-        <div class="cell center" id="c0-1">&#127819;</div>
-        <div class="cell"        id="c0-2">&#127820;</div>
+        <div class="cell row-0" id="c0-0">&#127826;</div>
+        <div class="cell row-1" id="c0-1">&#127819;</div>
+        <div class="cell row-2" id="c0-2">&#127820;</div>
       </div>
       <div class="reel" id="reel-1">
-        <div class="cell"        id="c1-0">&#128276;</div>
-        <div class="cell center bar-sym" id="c1-1">BAR</div>
-        <div class="cell"        id="c1-2">&#127815;</div>
+        <div class="cell row-0" id="c1-0">&#128276;</div>
+        <div class="cell row-1 bar-sym" id="c1-1">BAR</div>
+        <div class="cell row-2" id="c1-2">&#127815;</div>
       </div>
       <div class="reel" id="reel-2">
-        <div class="cell"        id="c2-0">&#127820;</div>
-        <div class="cell center seven-sym" id="c2-1">7</div>
-        <div class="cell"        id="c2-2">&#127826;</div>
+        <div class="cell row-0" id="c2-0">&#127820;</div>
+        <div class="cell row-1 seven-sym" id="c2-1">7</div>
+        <div class="cell row-2" id="c2-2">&#127826;</div>
       </div>
     </div>
   </div>
 
-  <div class="message idle" id="message">Pull the lever — good luck!</div>
+  <!-- Payline indicator chips — light up when that line wins -->
+  <div class="payline-indicators">
+    <span class="pl-ind pl-top" id="pl-0">TOP</span>
+    <span class="pl-ind pl-mid" id="pl-1">MID</span>
+    <span class="pl-ind pl-bot" id="pl-2">BOT</span>
+    <span class="pl-ind pl-d1"  id="pl-3">&#8600;</span>
+    <span class="pl-ind pl-d2"  id="pl-4">&#8599;</span>
+  </div>
+
+  <div class="message idle" id="message">Pull the lever &#8212; good luck!</div>
 
   <div class="controls">
-    <div class="bet-label">BET: 10 CREDITS PER SPIN</div>
     <button id="spinBtn">SPIN</button>
     <div class="hint">SPACE to spin</div>
   </div>
 
   <div class="paytable">
-    <div class="pt-title">&#8212; PAYTABLE &#8212;</div>
-    &#127826;&#127826;&#127826; = 20 &nbsp;|&nbsp; &#127826;&#127826; = 15 &nbsp;|&nbsp; &#127819;&#127819;&#127819; = 30<br>
-    &#127820;&#127820;&#127820; = 50 &nbsp;|&nbsp; &#127815;&#127815;&#127815; = 80 &nbsp;|&nbsp; &#128276;&#128276;&#128276; = 150<br>
-    BAR BAR BAR = 500<br>
-    <span class="jack-row">7 &nbsp;&nbsp; 7 &nbsp;&nbsp; 7 &nbsp;&nbsp; = 1000 JACKPOT</span>
+    <div class="pt-title">&#8212; PAYTABLE (per winning line) &#8212;</div>
+    &#127826;&#127826;&#127826; = &#215;2 &nbsp;|&nbsp; &#127826;&#127826; = &#215;1 &nbsp;|&nbsp; &#127819;&#127819;&#127819; = &#215;3<br>
+    &#127820;&#127820;&#127820; = &#215;5 &nbsp;|&nbsp; &#127815;&#127815;&#127815; = &#215;8 &nbsp;|&nbsp; &#128276;&#128276;&#128276; = &#215;15<br>
+    BAR BAR BAR = &#215;50<br>
+    <span class="jack-row">7 &nbsp; 7 &nbsp; 7 &nbsp; = &#215;100 &nbsp; JACKPOT</span>
+    <div class="pl-note">5 active paylines: TOP &middot; MID &middot; BOT &middot; &#8600; &middot; &#8599;</div>
   </div>
 
 </div>
 
 <script>
 // ── SYMBOLS ──────────────────────────────────────────────────────────────────
-// payout3 = payout for 3-of-a-kind on center row
-// payout2 = payout for cherry × 2 (left pair) on center row
-// weight  = relative spawn frequency in the pool
+// mult3 = win multiplier for 3-of-a-kind | mult2 = multiplier for cherry left-pair
 const SYMBOLS = [
-  { id: 'cherry', label: '\u{1F352}', cls: '',          payout3: 20,   payout2: 15, weight: 5 },
-  { id: 'lemon',  label: '\u{1F34B}', cls: '',          payout3: 30,   payout2: 0,  weight: 4 },
-  { id: 'orange', label: '\u{1F34A}', cls: '',          payout3: 50,   payout2: 0,  weight: 3 },
-  { id: 'grape',  label: '\u{1F347}', cls: '',          payout3: 80,   payout2: 0,  weight: 3 },
-  { id: 'bell',   label: '\u{1F514}', cls: '',          payout3: 150,  payout2: 0,  weight: 2 },
-  { id: 'bar',    label: 'BAR',       cls: 'bar-sym',   payout3: 500,  payout2: 0,  weight: 2 },
-  { id: 'seven',  label: '7',         cls: 'seven-sym', payout3: 1000, payout2: 0,  weight: 1 },
+  { id: 'cherry', label: '\u{1F352}', cls: '',          mult3: 2,   mult2: 1,  weight: 5 },
+  { id: 'lemon',  label: '\u{1F34B}', cls: '',          mult3: 3,   mult2: 0,  weight: 4 },
+  { id: 'orange', label: '\u{1F34A}', cls: '',          mult3: 5,   mult2: 0,  weight: 3 },
+  { id: 'grape',  label: '\u{1F347}', cls: '',          mult3: 8,   mult2: 0,  weight: 3 },
+  { id: 'bell',   label: '\u{1F514}', cls: '',          mult3: 15,  mult2: 0,  weight: 2 },
+  { id: 'bar',    label: 'BAR',       cls: 'bar-sym',   mult3: 50,  mult2: 0,  weight: 2 },
+  { id: 'seven',  label: '7',         cls: 'seven-sym', mult3: 100, mult2: 0,  weight: 1 },
 ];
 
-// Weighted pool: each symbol appears weight times
+// Weighted draw pool
 const POOL = SYMBOLS.flatMap(s => Array(s.weight).fill(s));
 
+// ── PAYLINES ──────────────────────────────────────────────────────────────────
+// rows[r] = which row to read from reel r  (0 = top, 1 = mid, 2 = bot)
+const PAYLINES = [
+  { rows: [0, 0, 0], name: 'TOP',       color: '#44aaff', indicatorId: 'pl-0' },
+  { rows: [1, 1, 1], name: 'MID',       color: '#ff5555', indicatorId: 'pl-1' },
+  { rows: [2, 2, 2], name: 'BOT',       color: '#44ee88', indicatorId: 'pl-2' },
+  { rows: [0, 1, 2], name: 'DIAG\u2198', color: '#ffaa44', indicatorId: 'pl-3' },
+  { rows: [2, 1, 0], name: 'DIAG\u2197', color: '#cc55ff', indicatorId: 'pl-4' },
+];
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
-const BET = 10;
-let credits = 100;
+const BET_OPTIONS = [1, 5, 10, 25];
+let bet      = 10;
+let credits  = loadCredits();
 let spinning = false;
 
 // ── DOM REFS ──────────────────────────────────────────────────────────────────
-const creditsEl = document.getElementById('creditsVal');
-const winEl     = document.getElementById('winVal');
-const messageEl = document.getElementById('message');
-const spinBtn   = document.getElementById('spinBtn');
+const creditsEl    = document.getElementById('creditsVal');
+const winEl        = document.getElementById('winVal');
+const messageEl    = document.getElementById('message');
+const spinBtn      = document.getElementById('spinBtn');
+const betBtns      = [...document.querySelectorAll('.bet-btn')];
+const plIndicators = PAYLINES.map(pl => document.getElementById(pl.indicatorId));
 
-// reelEls[r] — the .reel div
-// cellEls[r][row] — individual .cell divs; row 1 is center (payline)
 const reelEls = [0, 1, 2].map(r => document.getElementById(`reel-${r}`));
+// cellEls[reel][row]
 const cellEls = [0, 1, 2].map(r => [0, 1, 2].map(c => document.getElementById(`c${r}-${c}`)));
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function randSym() {
-  return POOL[Math.floor(Math.random() * POOL.length)];
+// ── PERSISTENCE ───────────────────────────────────────────────────────────────
+function loadCredits() {
+  const v = parseInt(localStorage.getItem('slotmachine_credits'), 10);
+  return isNaN(v) ? 100 : Math.max(0, v);
+}
+function saveCredits() {
+  localStorage.setItem('slotmachine_credits', credits);
 }
 
-// Write a symbol into a cell, rebuilding its className cleanly
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function randSym() { return POOL[Math.floor(Math.random() * POOL.length)]; }
+
+// Rebuild a cell's content + className from a symbol object
 function setCell(r, c, sym) {
   const el = cellEls[r][c];
   el.textContent = sym.label;
-  el.className = 'cell'
-    + (c === 1 ? ' center' : '')
-    + (sym.cls  ? ' ' + sym.cls : '');
+  el.className = `cell row-${c}` + (sym.cls ? ' ' + sym.cls : '');
 }
 
 function updateHUD(lastWin) {
@@ -291,49 +363,80 @@ function setMessage(text, cls) {
   messageEl.className   = 'message ' + cls;
 }
 
-// ── WIN EVALUATION ────────────────────────────────────────────────────────────
-// centerRow = [sym0, sym1, sym2] from the three reels' center cells
-function evaluate(centerRow) {
-  const [a, b, c] = centerRow;
-
-  if (a.id === b.id && b.id === c.id) {
-    const type = a.id === 'seven' ? 'jackpot' : 'win';
-    return { payout: a.payout3, type };
-  }
-  if (a.id === 'cherry' && b.id === 'cherry') {
-    return { payout: a.payout2, type: 'win' };
-  }
-  return { payout: 0, type: 'lose' };
+// Flash a single cell using its payline color (CSS custom property)
+function flashCell(r, c, color) {
+  const el = cellEls[r][c];
+  el.style.setProperty('--flash-color', color);
+  el.classList.remove('win-flash');
+  void el.offsetWidth;   // force reflow to restart animation
+  el.classList.add('win-flash');
 }
 
-// ── WIN FLASH ─────────────────────────────────────────────────────────────────
-function flashCenterCells() {
-  for (let r = 0; r < 3; r++) {
-    const el = cellEls[r][1];
-    el.classList.remove('flash');
-    void el.offsetWidth;      // force reflow to restart CSS animation
-    el.classList.add('flash');
+// Briefly illuminate a payline indicator chip
+function litIndicator(idx) {
+  const el = plIndicators[idx];
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), 1400);
+}
+
+// Re-sync bet button active state and disable unaffordable options
+function updateBetUI() {
+  betBtns.forEach(b => {
+    const val = parseInt(b.dataset.bet);
+    b.disabled = spinning || val > credits;
+    b.classList.toggle('active', val === bet);
+  });
+  // Auto-reduce bet to largest affordable value
+  if (bet > credits) {
+    const ok = BET_OPTIONS.filter(v => v <= credits);
+    if (ok.length) bet = ok[ok.length - 1];
+    betBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bet) === bet));
   }
+}
+
+// ── WIN EVALUATION ────────────────────────────────────────────────────────────
+// Returns { payout, isJackpot, cells } or null for no win on this line
+function evaluateLine(results, line) {
+  const syms = line.rows.map((row, reel) => results[reel][row]);
+  const [a, b, c] = syms;
+
+  if (a.id === b.id && b.id === c.id) {
+    return {
+      payout:    a.mult3 * bet,
+      isJackpot: a.id === 'seven',
+      cells:     line.rows.map((row, reel) => [reel, row]),
+    };
+  }
+  // Cherry left-pair: pays regardless of third symbol
+  if (a.id === 'cherry' && b.id === 'cherry') {
+    return {
+      payout:    a.mult2 * bet,
+      isJackpot: false,
+      cells:     [[0, line.rows[0]], [1, line.rows[1]]],
+    };
+  }
+  return null;
 }
 
 // ── SPIN ──────────────────────────────────────────────────────────────────────
 function spin() {
-  if (spinning || credits < BET) return;
+  if (spinning || credits < bet) return;
 
   spinning = true;
   spinBtn.disabled = true;
+  updateBetUI();   // disables bet buttons while spinning
 
-  credits -= BET;
+  credits -= bet;
+  saveCredits();
   updateHUD(0);
   setMessage('', 'idle');
 
-  // Pre-determine all 9 cell results before animation starts
+  // Determine the full 3×3 outcome grid before any animation runs
   const results = [0, 1, 2].map(() => [0, 1, 2].map(() => randSym()));
 
-  // Blur all reels to signal spinning
+  // Blur all reels to signal they are spinning
   reelEls.forEach(r => r.classList.add('spinning'));
 
-  // Rapid random cycling gives the visual spin effect
   const tickInterval = setInterval(() => {
     for (let r = 0; r < 3; r++) {
       if (reelEls[r].classList.contains('spinning')) {
@@ -354,33 +457,52 @@ function spin() {
   stopReel(1, 1400);
   stopReel(2, 2000);
 
-  // Resolve 200 ms after last reel snaps into place
+  // Resolve 200 ms after the last reel snaps into place
   setTimeout(() => {
     clearInterval(tickInterval);
 
-    const centerRow = [results[0][1], results[1][1], results[2][1]];
-    const { payout, type } = evaluate(centerRow);
+    let totalPayout = 0;
+    let isJackpot   = false;
+    const wins = [];
 
-    credits += payout;
-    updateHUD(payout);
+    PAYLINES.forEach((line, idx) => {
+      const result = evaluateLine(results, line);
+      if (result) {
+        totalPayout += result.payout;
+        if (result.isJackpot) isJackpot = true;
+        wins.push({ line, idx, ...result });
+      }
+    });
 
-    if (type === 'jackpot') {
-      setMessage(`\u{1F3B0} JACKPOT!  +${payout} CREDITS  \u{1F3B0}`, 'jackpot');
-      flashCenterCells();
-    } else if (type === 'win') {
-      setMessage(`WIN!  +${payout} CREDITS`, 'win');
-      flashCenterCells();
+    credits += totalPayout;
+    saveCredits();
+    updateHUD(totalPayout);
+
+    if (wins.length > 0) {
+      wins.forEach(w => {
+        w.cells.forEach(([r, c]) => flashCell(r, c, w.line.color));
+        litIndicator(w.idx);
+      });
+
+      if (isJackpot) {
+        setMessage('\u{1F3B0} JACKPOT!  +' + totalPayout + '  \u{1F3B0}', 'jackpot');
+      } else {
+        const names = wins.map(w => w.line.name).join(' + ');
+        setMessage('WIN: ' + names + '  +' + totalPayout, 'win');
+      }
     } else {
       setMessage('No win. Try again!', 'lose');
     }
 
     spinning = false;
 
-    if (credits < BET) {
+    if (credits <= 0) {
       setMessage('GAME OVER \u2014 no credits left!', 'gameover');
       spinBtn.textContent = 'NEW GAME';
       spinBtn.disabled    = false;
+      updateBetUI();
     } else {
+      updateBetUI();   // re-enables affordable bet options, auto-reduces if needed
       spinBtn.disabled = false;
     }
   }, 2200);
@@ -389,8 +511,12 @@ function spin() {
 // ── RESET ─────────────────────────────────────────────────────────────────────
 function resetGame() {
   credits = 100;
+  bet     = 10;
+  saveCredits();
   spinBtn.textContent = 'SPIN';
   spinBtn.disabled    = false;
+  spinning            = false;
+  updateBetUI();
   updateHUD(0);
   setMessage('Pull the lever \u2014 good luck!', 'idle');
 }
@@ -399,6 +525,15 @@ function resetGame() {
 spinBtn.addEventListener('click', () => {
   if (spinBtn.textContent === 'NEW GAME') { resetGame(); return; }
   spin();
+});
+
+betBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.dataset.bet);
+    if (spinning || val > credits) return;
+    bet = val;
+    updateBetUI();
+  });
 });
 
 document.addEventListener('keydown', e => {
@@ -410,6 +545,12 @@ document.addEventListener('keydown', e => {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateHUD(0);
+updateBetUI();   // handles saved credits < default bet, disables unaffordable options
+
+if (credits <= 0) {
+  setMessage('GAME OVER \u2014 no credits left!', 'gameover');
+  spinBtn.textContent = 'NEW GAME';
+}
 </script>
 </body>
 </html>
