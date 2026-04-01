@@ -38,8 +38,30 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 1.25rem;
-  width: 440px;
+  width: 460px;
+  transition: border-color 0.6s, box-shadow 0.6s;
 }
+.machine.free-spin-mode {
+  border-color: #aa55ff;
+  box-shadow: 0 0 50px rgba(170,85,255,0.45), 0 0 100px rgba(170,85,255,0.15),
+              inset 0 0 40px rgba(0,0,0,0.4);
+}
+
+/* ── PROGRESSIVE JACKPOT DISPLAY ────────────────────────── */
+.jackpot-display {
+  width: 100%;
+  background: #0a0a1a;
+  border: 2px solid #ff4444;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  transition: transform 0.15s;
+}
+.jackpot-display.bump { animation: jkbump 0.25s ease-out; }
+@keyframes jkbump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+.jk-label { font-size: 0.7rem; color: #ff8888; letter-spacing: 2px; display: block; }
+.jk-value { font-size: 1.9rem; color: #ff4444; font-weight: bold; display: block;
+            text-shadow: 0 0 10px rgba(255,68,68,0.5); }
 
 /* ── CREDIT / WIN DISPLAYS ──────────────────────────────── */
 .display-row { display: flex; gap: 0.75rem; width: 100%; }
@@ -64,12 +86,7 @@ h1 {
 }
 
 /* ── BET SELECTOR ───────────────────────────────────────── */
-.bet-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
+.bet-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
 .bet-label { font-size: 0.75rem; color: #999; letter-spacing: 1px; flex-shrink: 0; }
 
 .bet-btn {
@@ -85,16 +102,8 @@ h1 {
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.bet-btn:hover:not(:disabled):not(.active) {
-  background: #1a1a3a;
-  color: #aaa;
-  border-color: #555;
-}
-.bet-btn.active {
-  background: #2a2010;
-  color: #ffd700;
-  border-color: #ffd700;
-}
+.bet-btn:hover:not(:disabled):not(.active) { background: #1a1a3a; color: #ccc; border-color: #666; }
+.bet-btn.active  { background: #2a2010; color: #ffd700; border-color: #ffd700; }
 .bet-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
 /* ── REELS ──────────────────────────────────────────────── */
@@ -119,115 +128,119 @@ h1 {
   border-radius: 8px;
   transition: filter 0.12s;
 }
-
-/* Subtle per-row tint indicates which payline owns that row */
-.cell.row-0 { border-color: rgba( 68, 170, 255, 0.22); }
-.cell.row-1 { border-color: rgba(255,  85,  85, 0.45); background: #1e1e42; }
-.cell.row-2 { border-color: rgba( 68, 238, 136, 0.22); }
+.cell.row-0 { border-color: rgba( 68,170,255,0.22); }
+.cell.row-1 { border-color: rgba(255, 85, 85,0.45); background: #1e1e42; }
+.cell.row-2 { border-color: rgba( 68,238,136,0.22); }
 
 /* Symbol-specific overrides */
-.cell.bar-sym   { font-size: 1.25rem; font-weight: bold; color: #ffd700; letter-spacing: 2px; }
-.cell.seven-sym { font-size: 2rem;    font-weight: bold; color: #ff4444; }
+.cell.bar-sym     { font-size: 1.25rem; font-weight: bold; color: #ffd700; letter-spacing: 2px; }
+.cell.seven-sym   { font-size: 2rem;    font-weight: bold; color: #ff4444; }
+.cell.wild-sym    { border-color: rgba(255,215,0,0.7) !important; background: #1e1c00 !important; }
+.cell.scatter-sym { border-color: rgba(100,200,255,0.7) !important; background: #001e2a !important; }
 
-/* Spinning: blur all cells on the reel */
+/* Spinning blur */
 .reel.spinning .cell { filter: blur(3px); }
 
-/* Win flash — color set via --flash-color CSS variable per cell */
+/* Win flash — --flash-color set inline per cell */
 .cell.win-flash { animation: wflash 0.42s ease-in-out 3; }
 @keyframes wflash {
-  0%, 100% { box-shadow: none; }
-  50%       { border-color: var(--flash-color, #ffd700) !important;
-              box-shadow:   0 0 18px var(--flash-color, #ffd700);
-              background:   #252520; }
+  0%,100% { box-shadow: none; }
+  50%     { border-color: var(--flash-color,#ffd700) !important;
+            box-shadow:   0 0 18px var(--flash-color,#ffd700);
+            background:   #252520; }
 }
 
 /* ── PAYLINE INDICATORS ─────────────────────────────────── */
 .payline-indicators { display: flex; gap: 0.4rem; align-items: center; }
-
 .pl-ind {
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 0.72rem;
-  font-weight: bold;
-  border: 1px solid currentColor;
-  letter-spacing: 1px;
-  opacity: 0.45;
+  padding: 3px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: bold;
+  border: 1px solid currentColor; letter-spacing: 1px; opacity: 0.45;
   transition: opacity 0.15s, box-shadow 0.15s;
 }
 .pl-ind.lit { opacity: 1; box-shadow: 0 0 8px currentColor; }
-.pl-top { color: #44aaff; }
-.pl-mid { color: #ff5555; }
-.pl-bot { color: #44ee88; }
-.pl-d1  { color: #ffaa44; }
-.pl-d2  { color: #cc55ff; }
+.pl-top { color: #44aaff; } .pl-mid { color: #ff5555; } .pl-bot { color: #44ee88; }
+.pl-d1  { color: #ffaa44; } .pl-d2  { color: #cc55ff; }
 
 /* ── MESSAGE ────────────────────────────────────────────── */
 .message {
-  font-size: 1.1rem;
-  font-weight: bold;
-  min-height: 1.6rem;
-  text-align: center;
-  letter-spacing: 1px;
+  font-size: 1.1rem; font-weight: bold; min-height: 1.6rem;
+  text-align: center; letter-spacing: 1px;
 }
 .message.idle     { color: #888; }
 .message.win      { color: #ffd700; }
 .message.lose     { color: #777; }
 .message.jackpot  { color: #ff4444; animation: jackpulse 0.5s infinite alternate; }
 .message.gameover { color: #ff6666; }
+.message.freespin { color: #cc88ff; animation: freepulse 0.8s infinite alternate; }
 
 @keyframes jackpulse {
   from { text-shadow: 0 0 5px  #ff4444; }
   to   { text-shadow: 0 0 30px #ff4444, 0 0 60px #ff0000; }
 }
+@keyframes freepulse {
+  from { text-shadow: 0 0 5px  #aa55ff; }
+  to   { text-shadow: 0 0 20px #cc88ff; }
+}
 
-/* ── SPIN BUTTON ────────────────────────────────────────── */
+/* ── CONTROLS ───────────────────────────────────────────── */
 .controls { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 100%; }
+.controls-row { display: flex; gap: 0.75rem; width: 100%; align-items: center; }
 .hint { font-size: 0.68rem; color: #666; }
 
 #spinBtn {
-  width: 100%;
+  flex: 1;
   padding: 0.85rem;
   background: linear-gradient(180deg, #ffd700 0%, #cc7700 100%);
-  color: #1a1a2e;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.4rem;
-  font-weight: bold;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 4px;
-  cursor: pointer;
+  color: #1a1a2e; border: none; border-radius: 50px;
+  font-size: 1.3rem; font-weight: bold; font-family: 'Courier New', monospace;
+  letter-spacing: 3px; cursor: pointer;
   box-shadow: 0 4px 15px rgba(255,153,0,0.4);
   transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
 }
-#spinBtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(255,153,0,0.6);
-}
+#spinBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(255,153,0,0.6); }
 #spinBtn:active:not(:disabled) { transform: translateY(1px); }
 #spinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.machine.free-spin-mode #spinBtn {
+  background: linear-gradient(180deg, #cc88ff 0%, #7722cc 100%);
+  box-shadow: 0 4px 15px rgba(170,85,255,0.5);
+}
+
+#muteBtn {
+  width: 42px; height: 42px;
+  background: #0a0a1a; border: 1px solid #444; border-radius: 8px;
+  font-size: 1.1rem; cursor: pointer; flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+#muteBtn:hover { background: #1a1a3a; border-color: #666; }
+
 /* ── PAYTABLE ───────────────────────────────────────────── */
 .paytable {
-  border-top: 1px solid #2e2e4e;
-  padding-top: 1rem;
-  width: 100%;
-  font-size: 0.76rem;
-  color: #bbb;
-  line-height: 1.9;
-  text-align: center;
+  border-top: 1px solid #2e2e4e; padding-top: 1rem; width: 100%;
+  font-size: 0.76rem; color: #bbb; line-height: 1.9; text-align: center;
 }
-.paytable .pt-title { color: #ffd700; font-size: 0.82rem; letter-spacing: 2px; }
-.paytable .jack-row { color: #ff8888; }
-.paytable .pl-note  { font-size: 0.68rem; color: #888; margin-top: 0.2rem; }
+.paytable .pt-title  { color: #ffd700; font-size: 0.82rem; letter-spacing: 2px; }
+.paytable .jack-row  { color: #ff8888; }
+.paytable .wild-row  { color: #ffd700; }
+.paytable .scat-row  { color: #88ddff; }
+.paytable .pl-note   { font-size: 0.68rem; color: #888; margin-top: 0.2rem; }
+.paytable .divider   { color: #333; }
 </style>
 </head>
 <body>
 
 <h1>&#127920; SLOTS</h1>
 
-<div class="machine">
+<div class="machine" id="machine">
 
-  <!-- Credit and win displays -->
+  <!-- Progressive jackpot -->
+  <div class="jackpot-display" id="jackpotDisplay">
+    <span class="jk-label">&#9733; PROGRESSIVE JACKPOT &#9733;</span>
+    <span class="jk-value" id="jackpotVal">200</span>
+  </div>
+
+  <!-- Credit and last-win displays -->
   <div class="display-row">
     <div class="display-box">CREDITS<span class="value" id="creditsVal">100</span></div>
     <div class="display-box">LAST WIN<span class="value" id="winVal">&#8212;</span></div>
@@ -242,7 +255,7 @@ h1 {
     <button class="bet-btn" data-bet="25">25</button>
   </div>
 
-  <!-- Reels: 3 columns × 3 rows; row-1 (middle) is the center payline -->
+  <!-- Reels: 3 cols × 3 rows; row-1 (center) is the MID payline -->
   <div class="reels-wrapper">
     <div class="reels" id="reels">
       <div class="reel" id="reel-0">
@@ -263,7 +276,7 @@ h1 {
     </div>
   </div>
 
-  <!-- Payline indicator chips — light up when that line wins -->
+  <!-- Payline indicator chips -->
   <div class="payline-indicators">
     <span class="pl-ind pl-top" id="pl-0">TOP</span>
     <span class="pl-ind pl-mid" id="pl-1">MID</span>
@@ -275,7 +288,10 @@ h1 {
   <div class="message idle" id="message">Pull the lever &#8212; good luck!</div>
 
   <div class="controls">
-    <button id="spinBtn">SPIN</button>
+    <div class="controls-row">
+      <button id="spinBtn">SPIN</button>
+      <button id="muteBtn" title="Toggle sound">&#128266;</button>
+    </div>
     <div class="hint">SPACE to spin</div>
   </div>
 
@@ -284,69 +300,179 @@ h1 {
     &#127826;&#127826;&#127826; = &#215;2 &nbsp;|&nbsp; &#127826;&#127826; = &#215;1 &nbsp;|&nbsp; &#127819;&#127819;&#127819; = &#215;3<br>
     &#127820;&#127820;&#127820; = &#215;5 &nbsp;|&nbsp; &#127815;&#127815;&#127815; = &#215;8 &nbsp;|&nbsp; &#128276;&#128276;&#128276; = &#215;15<br>
     BAR BAR BAR = &#215;50<br>
-    <span class="jack-row">7 &nbsp; 7 &nbsp; 7 &nbsp; = &#215;100 &nbsp; JACKPOT</span>
-    <div class="pl-note">5 active paylines: TOP &middot; MID &middot; BOT &middot; &#8600; &middot; &#8599;</div>
+    <span class="jack-row">7 &nbsp; 7 &nbsp; 7 &nbsp; = PROGRESSIVE JACKPOT</span><br>
+    <span class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</span><br>
+    <span class="wild-row">&#127775; WILD &nbsp;= substitutes for any symbol (not 7)</span><br>
+    <span class="wild-row">&#127775;&#127775;&#127775; = &#215;15 &nbsp;|&nbsp; &#127775; completes 3-of-a-kind</span><br>
+    <span class="scat-row">&#128142;&#128142; anywhere = &#215;5 bonus</span><br>
+    <span class="scat-row">&#128142;&#128142;&#128142; anywhere = &#215;5 + 8 FREE SPINS</span><br>
+    <div class="pl-note">5 paylines: TOP &middot; MID &middot; BOT &middot; &#8600; &middot; &#8599; &nbsp;|&nbsp; Jackpot grows with each paid spin</div>
   </div>
 
 </div>
 
 <script>
 // ── SYMBOLS ──────────────────────────────────────────────────────────────────
-// mult3 = win multiplier for 3-of-a-kind | mult2 = multiplier for cherry left-pair
+// mult3: 3-of-a-kind multiplier | mult2: cherry left-pair multiplier
+// wild/scatter mult3 unused (handled separately)
 const SYMBOLS = [
-  { id: 'cherry', label: '\u{1F352}', cls: '',          mult3: 2,   mult2: 1,  weight: 5 },
-  { id: 'lemon',  label: '\u{1F34B}', cls: '',          mult3: 3,   mult2: 0,  weight: 4 },
-  { id: 'orange', label: '\u{1F34A}', cls: '',          mult3: 5,   mult2: 0,  weight: 3 },
-  { id: 'grape',  label: '\u{1F347}', cls: '',          mult3: 8,   mult2: 0,  weight: 3 },
-  { id: 'bell',   label: '\u{1F514}', cls: '',          mult3: 15,  mult2: 0,  weight: 2 },
-  { id: 'bar',    label: 'BAR',       cls: 'bar-sym',   mult3: 50,  mult2: 0,  weight: 2 },
-  { id: 'seven',  label: '7',         cls: 'seven-sym', mult3: 100, mult2: 0,  weight: 1 },
+  { id: 'cherry',  label: '\u{1F352}', cls: '',            mult3: 2,   mult2: 1,  weight: 5 },
+  { id: 'lemon',   label: '\u{1F34B}', cls: '',            mult3: 3,   mult2: 0,  weight: 4 },
+  { id: 'orange',  label: '\u{1F34A}', cls: '',            mult3: 5,   mult2: 0,  weight: 3 },
+  { id: 'grape',   label: '\u{1F347}', cls: '',            mult3: 8,   mult2: 0,  weight: 3 },
+  { id: 'bell',    label: '\u{1F514}', cls: '',            mult3: 15,  mult2: 0,  weight: 2 },
+  { id: 'bar',     label: 'BAR',       cls: 'bar-sym',     mult3: 50,  mult2: 0,  weight: 2 },
+  { id: 'seven',   label: '7',         cls: 'seven-sym',   mult3: 0,   mult2: 0,  weight: 1 },
+  { id: 'wild',    label: '\u{1F31F}', cls: 'wild-sym',    mult3: 0,   mult2: 0,  weight: 2 },
+  { id: 'scatter', label: '\u{1F48E}', cls: 'scatter-sym', mult3: 0,   mult2: 0,  weight: 1 },
 ];
 
-// Weighted draw pool
 const POOL = SYMBOLS.flatMap(s => Array(s.weight).fill(s));
+const BELL = SYMBOLS.find(s => s.id === 'bell'); // wild ×3 pays at bell rate
 
 // ── PAYLINES ──────────────────────────────────────────────────────────────────
-// rows[r] = which row to read from reel r  (0 = top, 1 = mid, 2 = bot)
 const PAYLINES = [
-  { rows: [0, 0, 0], name: 'TOP',       color: '#44aaff', indicatorId: 'pl-0' },
-  { rows: [1, 1, 1], name: 'MID',       color: '#ff5555', indicatorId: 'pl-1' },
-  { rows: [2, 2, 2], name: 'BOT',       color: '#44ee88', indicatorId: 'pl-2' },
-  { rows: [0, 1, 2], name: 'DIAG\u2198', color: '#ffaa44', indicatorId: 'pl-3' },
-  { rows: [2, 1, 0], name: 'DIAG\u2197', color: '#cc55ff', indicatorId: 'pl-4' },
+  { rows: [0,0,0], name: 'TOP',         color: '#44aaff', indicatorId: 'pl-0' },
+  { rows: [1,1,1], name: 'MID',         color: '#ff5555', indicatorId: 'pl-1' },
+  { rows: [2,2,2], name: 'BOT',         color: '#44ee88', indicatorId: 'pl-2' },
+  { rows: [0,1,2], name: 'DIAG\u2198', color: '#ffaa44', indicatorId: 'pl-3' },
+  { rows: [2,1,0], name: 'DIAG\u2197', color: '#cc55ff', indicatorId: 'pl-4' },
 ];
 
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const BET_OPTIONS      = [1, 5, 10, 25];
+const FREE_SPIN_COUNT  = 8;
+const JACKPOT_SEED     = 200;
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
-const BET_OPTIONS = [1, 5, 10, 25];
-let bet      = 10;
-let credits  = loadCredits();
-let spinning = false;
+let bet              = 10;
+let credits          = loadCredits();
+let jackpot          = loadJackpot();
+let freeSpins        = 0;
+let freeSpinWinnings = 0;
+let spinning         = false;
+let muted            = false;
+let audioCtx         = null;
 
 // ── DOM REFS ──────────────────────────────────────────────────────────────────
+const machineEl    = document.getElementById('machine');
 const creditsEl    = document.getElementById('creditsVal');
 const winEl        = document.getElementById('winVal');
+const jackpotEl    = document.getElementById('jackpotVal');
+const jackpotDisp  = document.getElementById('jackpotDisplay');
 const messageEl    = document.getElementById('message');
 const spinBtn      = document.getElementById('spinBtn');
+const muteBtn      = document.getElementById('muteBtn');
 const betBtns      = [...document.querySelectorAll('.bet-btn')];
 const plIndicators = PAYLINES.map(pl => document.getElementById(pl.indicatorId));
+const reelEls      = [0,1,2].map(r => document.getElementById(`reel-${r}`));
+const cellEls      = [0,1,2].map(r => [0,1,2].map(c => document.getElementById(`c${r}-${c}`)));
 
-const reelEls = [0, 1, 2].map(r => document.getElementById(`reel-${r}`));
-// cellEls[reel][row]
-const cellEls = [0, 1, 2].map(r => [0, 1, 2].map(c => document.getElementById(`c${r}-${c}`)));
+// ── AUDIO ─────────────────────────────────────────────────────────────────────
+function getCtx() {
+  if (muted) return null;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function tone(freq, type, startGain, duration, startTime) {
+  const ctx = getCtx(); if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = type; osc.frequency.value = freq;
+  const t = startTime ?? ctx.currentTime;
+  g.gain.setValueAtTime(startGain, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.start(t); osc.stop(t + duration + 0.01);
+}
+
+function playSpinStart() {
+  const ctx = getCtx(); if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(80, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 0.18);
+  g.gain.setValueAtTime(0.07, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.19);
+}
+
+function playTick() { tone(260, 'square', 0.12, 0.07); }
+
+function playWin(big = false) {
+  const ctx = getCtx(); if (!ctx) return;
+  const notes = big ? [523,659,784,1047,1319] : [440,554,659];
+  const step  = big ? 0.14 : 0.12;
+  notes.forEach((f, i) => tone(f, 'sine', 0.18, step * 0.9, ctx.currentTime + i * step));
+}
+
+function playJackpot() {
+  const ctx = getCtx(); if (!ctx) return;
+  const melody = [523,659,784,1047,784,1047,1319,1047,1319,1568];
+  melody.forEach((f, i) => {
+    const t = ctx.currentTime + i * 0.17;
+    tone(f, i % 2 === 0 ? 'sine' : 'triangle', 0.22, 0.22, t);
+  });
+}
+
+function playNoWin() {
+  const ctx = getCtx(); if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g   = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(220, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.3);
+  g.gain.setValueAtTime(0.1, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.31);
+}
+
+function playScatterChime() {
+  const ctx = getCtx(); if (!ctx) return;
+  [880,1100,1320,1540,1760].forEach((f, i) =>
+    tone(f, 'sine', 0.14, 0.18, ctx.currentTime + i * 0.09));
+}
+
+function playFreeSpinFanfare() {
+  const ctx = getCtx(); if (!ctx) return;
+  [392,494,587,740,880,740,880,1047].forEach((f, i) =>
+    tone(f, i % 2 ? 'triangle' : 'sine', 0.2, 0.2, ctx.currentTime + i * 0.15));
+}
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
 function loadCredits() {
   const v = parseInt(localStorage.getItem('slotmachine_credits'), 10);
   return isNaN(v) ? 100 : Math.max(0, v);
 }
-function saveCredits() {
-  localStorage.setItem('slotmachine_credits', credits);
+function saveCredits() { localStorage.setItem('slotmachine_credits', credits); }
+
+function loadJackpot() {
+  const v = parseInt(localStorage.getItem('slotmachine_jackpot'), 10);
+  return isNaN(v) ? JACKPOT_SEED : Math.max(JACKPOT_SEED, v);
+}
+function saveJackpot() { localStorage.setItem('slotmachine_jackpot', jackpot); }
+
+// ── JACKPOT DISPLAY ───────────────────────────────────────────────────────────
+function updateJackpotDisplay() {
+  jackpotEl.textContent = jackpot;
+}
+function addToJackpot(amount) {
+  jackpot += amount;
+  saveJackpot();
+  updateJackpotDisplay();
+  jackpotDisp.classList.remove('bump');
+  void jackpotDisp.offsetWidth;
+  jackpotDisp.classList.add('bump');
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function randSym() { return POOL[Math.floor(Math.random() * POOL.length)]; }
 
-// Rebuild a cell's content + className from a symbol object
 function setCell(r, c, sym) {
   const el = cellEls[r][c];
   el.textContent = sym.label;
@@ -363,93 +489,147 @@ function setMessage(text, cls) {
   messageEl.className   = 'message ' + cls;
 }
 
-// Flash a single cell using its payline color (CSS custom property)
 function flashCell(r, c, color) {
   const el = cellEls[r][c];
   el.style.setProperty('--flash-color', color);
   el.classList.remove('win-flash');
-  void el.offsetWidth;   // force reflow to restart animation
+  void el.offsetWidth;
   el.classList.add('win-flash');
 }
 
-// Briefly illuminate a payline indicator chip
 function litIndicator(idx) {
   const el = plIndicators[idx];
   el.classList.add('lit');
   setTimeout(() => el.classList.remove('lit'), 1400);
 }
 
-// Re-sync bet button active state and disable unaffordable options
 function updateBetUI() {
   betBtns.forEach(b => {
     const val = parseInt(b.dataset.bet);
     b.disabled = spinning || val > credits;
     b.classList.toggle('active', val === bet);
   });
-  // Auto-reduce bet to largest affordable value
   if (bet > credits) {
     const ok = BET_OPTIONS.filter(v => v <= credits);
-    if (ok.length) bet = ok[ok.length - 1];
+    if (ok.length) { bet = ok[ok.length - 1]; }
     betBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bet) === bet));
   }
 }
 
 // ── WIN EVALUATION ────────────────────────────────────────────────────────────
-// Returns { payout, isJackpot, cells } or null for no win on this line
+// Wild substitutes for any symbol except seven (jackpot requires genuine 7×3).
+// Scatter is position-independent and counted separately.
 function evaluateLine(results, line) {
   const syms = line.rows.map((row, reel) => results[reel][row]);
-  const [a, b, c] = syms;
 
-  if (a.id === b.id && b.id === c.id) {
+  // Scatter never participates in paylines
+  if (syms.some(s => s.id === 'scatter')) return null;
+
+  const hasWild  = syms.some(s => s.id === 'wild');
+  const nonWild  = syms.filter(s => s.id !== 'wild');
+
+  // All three are wilds: pay at bell rate
+  if (nonWild.length === 0) {
+    return { payout: BELL.mult3 * bet, isJackpot: false,
+             cells: line.rows.map((row, r) => [r, row]) };
+  }
+
+  const base = nonWild[0];
+  if (nonWild.every(s => s.id === base.id)) {
+    // Wilds cannot complete a 7-7-7 jackpot
+    if (base.id === 'seven' && hasWild) return null;
+    // seven payout is overridden by jackpot value in spin(); mult3 is 0 here
     return {
-      payout:    a.mult3 * bet,
-      isJackpot: a.id === 'seven',
-      cells:     line.rows.map((row, reel) => [reel, row]),
+      payout:    base.mult3 * bet,
+      isJackpot: base.id === 'seven',
+      cells:     line.rows.map((row, r) => [r, row]),
     };
   }
-  // Cherry left-pair: pays regardless of third symbol
-  if (a.id === 'cherry' && b.id === 'cherry') {
-    return {
-      payout:    a.mult2 * bet,
-      isJackpot: false,
-      cells:     [[0, line.rows[0]], [1, line.rows[1]]],
-    };
+
+  // Cherry left-pair (no wild substitution; only genuine cherry×2)
+  if (syms[0].id === 'cherry' && syms[1].id === 'cherry') {
+    return { payout: syms[0].mult2 * bet, isJackpot: false,
+             cells: [[0, line.rows[0]], [1, line.rows[1]]] };
   }
+
   return null;
+}
+
+function countScatters(results) {
+  let n = 0;
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 3; c++)
+      if (results[r][c].id === 'scatter') n++;
+  return n;
+}
+
+function getScatterCells(results) {
+  const cells = [];
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 3; c++)
+      if (results[r][c].id === 'scatter') cells.push([r, c]);
+  return cells;
+}
+
+// ── FREE SPINS ────────────────────────────────────────────────────────────────
+function updateFreeSpinBtn() {
+  spinBtn.textContent = freeSpins > 0 ? `FREE (${freeSpins})` : 'SPIN';
+}
+
+function startFreeSpins(count) {
+  freeSpins        = count;
+  freeSpinWinnings = 0;
+  machineEl.classList.add('free-spin-mode');
+  updateFreeSpinBtn();
+  setMessage(`\u{1F48E} ${count} FREE SPINS!`, 'freespin');
+  playFreeSpinFanfare();
+  spinBtn.disabled = false;
+}
+
+function endFreeSpins() {
+  machineEl.classList.remove('free-spin-mode');
+  spinBtn.textContent = 'SPIN';
+  const msg = freeSpinWinnings > 0
+    ? `Free spins ended \u2014 won ${freeSpinWinnings}!`
+    : 'Free spins over. Try again!';
+  setMessage(msg, freeSpinWinnings > 0 ? 'win' : 'lose');
 }
 
 // ── SPIN ──────────────────────────────────────────────────────────────────────
 function spin() {
-  if (spinning || credits < bet) return;
+  if (spinning) return;
+  const isFree = freeSpins > 0;
+  if (!isFree && credits < bet) return;
 
   spinning = true;
   spinBtn.disabled = true;
-  updateBetUI();   // disables bet buttons while spinning
+  updateBetUI();
+  playSpinStart();
 
-  credits -= bet;
-  saveCredits();
+  if (!isFree) {
+    credits -= bet;
+    addToJackpot(Math.ceil(bet * 0.5)); // 50% of bet grows the jackpot
+    saveCredits();
+  }
   updateHUD(0);
   setMessage('', 'idle');
 
-  // Determine the full 3×3 outcome grid before any animation runs
-  const results = [0, 1, 2].map(() => [0, 1, 2].map(() => randSym()));
+  // Determine the full 3×3 result grid before animation
+  const results = [0,1,2].map(() => [0,1,2].map(() => randSym()));
 
-  // Blur all reels to signal they are spinning
   reelEls.forEach(r => r.classList.add('spinning'));
 
   const tickInterval = setInterval(() => {
-    for (let r = 0; r < 3; r++) {
-      if (reelEls[r].classList.contains('spinning')) {
+    for (let r = 0; r < 3; r++)
+      if (reelEls[r].classList.contains('spinning'))
         for (let c = 0; c < 3; c++) setCell(r, c, randSym());
-      }
-    }
   }, 80);
 
-  // Stop reels left → right, 600 ms apart
   function stopReel(r, delay) {
     setTimeout(() => {
       reelEls[r].classList.remove('spinning');
       for (let c = 0; c < 3; c++) setCell(r, c, results[r][c]);
+      playTick();
     }, delay);
   }
 
@@ -457,65 +637,126 @@ function spin() {
   stopReel(1, 1400);
   stopReel(2, 2000);
 
-  // Resolve 200 ms after the last reel snaps into place
   setTimeout(() => {
     clearInterval(tickInterval);
 
-    let totalPayout = 0;
-    let isJackpot   = false;
+    // ── Payline evaluation ──────────────────────────────────
+    let paylinePayout = 0;
+    let isJackpotWin  = false;
     const wins = [];
 
     PAYLINES.forEach((line, idx) => {
       const result = evaluateLine(results, line);
-      if (result) {
-        totalPayout += result.payout;
-        if (result.isJackpot) isJackpot = true;
-        wins.push({ line, idx, ...result });
+      if (!result) return;
+      if (result.isJackpot) {
+        result.payout = jackpot;   // override with current progressive amount
+        jackpot       = JACKPOT_SEED;
+        saveJackpot();
+        updateJackpotDisplay();
+        isJackpotWin  = true;
       }
+      paylinePayout += result.payout;
+      wins.push({ line, idx, ...result });
     });
 
+    // Flash winning payline cells
+    wins.forEach(w => {
+      w.cells.forEach(([r, c]) => flashCell(r, c, w.line.color));
+      litIndicator(w.idx);
+    });
+
+    // ── Scatter evaluation (position-independent) ───────────
+    const scatterCount   = countScatters(results);
+    const scatterCells   = getScatterCells(results);
+    const scatterPayout  = scatterCount >= 2 ? 5 * bet : 0;
+
+    // Always flash scatter cells (gold/cyan) when visible
+    scatterCells.forEach(([r, c]) => flashCell(r, c, '#88ddff'));
+
+    // ── Totals ───────────────────────────────────────────────
+    const totalPayout = paylinePayout + scatterPayout;
     credits += totalPayout;
+    if (isFree) freeSpinWinnings += totalPayout;
     saveCredits();
     updateHUD(totalPayout);
 
-    if (wins.length > 0) {
-      wins.forEach(w => {
-        w.cells.forEach(([r, c]) => flashCell(r, c, w.line.color));
-        litIndicator(w.idx);
-      });
-
-      if (isJackpot) {
-        setMessage('\u{1F3B0} JACKPOT!  +' + totalPayout + '  \u{1F3B0}', 'jackpot');
-      } else {
-        const names = wins.map(w => w.line.name).join(' + ');
-        setMessage('WIN: ' + names + '  +' + totalPayout, 'win');
+    // ── Sound & message ──────────────────────────────────────
+    if (isJackpotWin) {
+      playJackpot();
+      setMessage('\u{1F3B0} JACKPOT! +' + totalPayout + ' \u{1F3B0}', 'jackpot');
+    } else if (scatterCount >= 3 && !isFree) {
+      // Message will be set by startFreeSpins after a brief delay
+      if (scatterPayout > 0 || wins.length > 0) {
+        setMessage('\u{1F48E}\u{1F48E}\u{1F48E} SCATTER! +' + totalPayout, 'win');
       }
+      playScatterChime();
+    } else if (totalPayout > 0) {
+      const parts = [];
+      if (wins.length > 0) parts.push(wins.map(w => w.line.name).join('+'));
+      if (scatterPayout > 0) parts.push('\u{1F48E}SCATTER');
+      setMessage('WIN: ' + parts.join(' ') + '  +' + totalPayout, 'win');
+      playWin(totalPayout >= bet * 20);
     } else {
-      setMessage('No win. Try again!', 'lose');
+      setMessage('No win. Try again!', isFree ? 'freespin' : 'lose');
+      playNoWin();
     }
 
+    // ── Free spin trigger / countdown ───────────────────────
     spinning = false;
 
+    if (scatterCount >= 3) {
+      if (isFree) {
+        // Retrigger: add more free spins
+        freeSpins += FREE_SPIN_COUNT;
+        updateFreeSpinBtn();
+        setMessage(`\u{1F48E} +${FREE_SPIN_COUNT} spins! (${freeSpins} left)`, 'freespin');
+        playFreeSpinFanfare();
+        spinBtn.disabled = false;
+      } else {
+        // Start free spins after a short pause so scatter win message is readable
+        setTimeout(() => startFreeSpins(FREE_SPIN_COUNT), 1400);
+        // spinBtn stays disabled until startFreeSpins re-enables it
+        return;
+      }
+    } else if (isFree) {
+      freeSpins--;
+      if (freeSpins <= 0) {
+        endFreeSpins();
+        freeSpins = 0;
+      } else {
+        updateFreeSpinBtn();
+      }
+    }
+
+    // ── Re-enable controls ───────────────────────────────────
     if (credits <= 0) {
-      setMessage('GAME OVER \u2014 no credits left!', 'gameover');
-      spinBtn.textContent = 'NEW GAME';
-      spinBtn.disabled    = false;
-      updateBetUI();
+      showGameOver();
     } else {
-      updateBetUI();   // re-enables affordable bet options, auto-reduces if needed
+      updateBetUI();
       spinBtn.disabled = false;
     }
   }, 2200);
 }
 
+// ── GAME OVER ─────────────────────────────────────────────────────────────────
+function showGameOver() {
+  setMessage('GAME OVER \u2014 no credits left!', 'gameover');
+  spinBtn.textContent = 'NEW GAME';
+  spinBtn.disabled    = false;
+  updateBetUI();
+}
+
 // ── RESET ─────────────────────────────────────────────────────────────────────
 function resetGame() {
-  credits = 100;
-  bet     = 10;
+  credits          = 100;
+  bet              = 10;
+  freeSpins        = 0;
+  freeSpinWinnings = 0;
+  spinning         = false;
+  machineEl.classList.remove('free-spin-mode');
   saveCredits();
   spinBtn.textContent = 'SPIN';
   spinBtn.disabled    = false;
-  spinning            = false;
   updateBetUI();
   updateHUD(0);
   setMessage('Pull the lever \u2014 good luck!', 'idle');
@@ -536,6 +777,12 @@ betBtns.forEach(btn => {
   });
 });
 
+muteBtn.addEventListener('click', () => {
+  muted = !muted;
+  muteBtn.textContent = muted ? '\u{1F507}' : '\u{1F50A}';
+  muteBtn.title = muted ? 'Unmute' : 'Mute';
+});
+
 document.addEventListener('keydown', e => {
   if (e.code !== 'Space') return;
   e.preventDefault();
@@ -545,12 +792,10 @@ document.addEventListener('keydown', e => {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateHUD(0);
-updateBetUI();   // handles saved credits < default bet, disables unaffordable options
+updateJackpotDisplay();
+updateBetUI();
 
-if (credits <= 0) {
-  setMessage('GAME OVER \u2014 no credits left!', 'gameover');
-  spinBtn.textContent = 'NEW GAME';
-}
+if (credits <= 0) showGameOver();
 </script>
 </body>
 </html>
