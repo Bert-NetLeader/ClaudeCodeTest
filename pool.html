@@ -91,10 +91,13 @@ class Ball {
 
   wallBounce() {
     const E = 0.75; // restitution
-    if (this.x - R < PX)      { this.x = PX + R;      this.vx =  Math.abs(this.vx) * E; }
-    if (this.x + R > PX + PW) { this.x = PX + PW - R; this.vx = -Math.abs(this.vx) * E; }
-    if (this.y - R < PY)      { this.y = PY + R;      this.vy =  Math.abs(this.vy) * E; }
-    if (this.y + R > PY + PH) { this.y = PY + PH - R; this.vy = -Math.abs(this.vy) * E; }
+    const spd = this.speed;
+    let hit = false;
+    if (this.x - R < PX)      { this.x = PX + R;      this.vx =  Math.abs(this.vx) * E; hit = true; }
+    if (this.x + R > PX + PW) { this.x = PX + PW - R; this.vx = -Math.abs(this.vx) * E; hit = true; }
+    if (this.y - R < PY)      { this.y = PY + R;      this.vy =  Math.abs(this.vy) * E; hit = true; }
+    if (this.y + R > PY + PH) { this.y = PY + PH - R; this.vy = -Math.abs(this.vy) * E; hit = true; }
+    if (hit) playWallBounce(spd);
   }
 
   draw() {
@@ -171,6 +174,7 @@ function ballBallCollide(a, b) {
   b.x += nx * sep;  b.y += ny * sep;
   const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
   if (rv >= 0) return;
+  playBallHit(Math.abs(rv));
   a.vx += rv * nx;  a.vy += rv * ny;
   b.vx -= rv * nx;  b.vy -= rv * ny;
 }
@@ -229,6 +233,7 @@ function checkPockets() {
         b.pocketed = true;
         b.vx = 0; b.vy = 0;
         pocketedThisTurn.push(b);
+        playPocket();
         break;
       }
     }
@@ -268,6 +273,7 @@ function resolveShot() {
     inBallInHand  = true;
     breakShot     = false;
     currentPlayer = op;
+    playScratch();
     setMsg(`Scratch! Ball in hand — Player ${op + 1}'s turn`, 320);
     return;
   }
@@ -304,10 +310,165 @@ function resolveShot() {
 function endGame(p, text) {
   gameOver = true;
   winner   = p;
+  playWin();
   setMsg(text + '   Press R to restart.', 1e9);
 }
 
-// ─── 7. INPUT ─────────────────────────────────────────────────────────────────
+// ─── 7. AUDIO ─────────────────────────────────────────────────────────────────
+let audioCtx = null;
+let muted = false;
+
+function getAC() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Noise buffer for percussive sounds
+function makeNoiseBuf(ac, dur) {
+  const buf  = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+// Throttle: one sound per category per N ms
+const _lastPlayed = {};
+function throttled(id, ms = 25) {
+  const now = Date.now();
+  if (now - (_lastPlayed[id] || 0) < ms) return false;
+  _lastPlayed[id] = now;
+  return true;
+}
+
+// Cue hitting cue ball — sharp click scaled by power
+function playCueStrike(power) {
+  if (muted) return;
+  const ac = getAC(), t = ac.currentTime;
+  const vol = 0.35 + 0.45 * (power / MAX_POWER);
+
+  const src  = ac.createBufferSource();
+  src.buffer = makeNoiseBuf(ac, 0.06);
+  const bp   = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 1800 + power * 80;
+  bp.Q.value = 1.8;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  src.connect(bp); bp.connect(g); g.connect(ac.destination);
+  src.start(t); src.stop(t + 0.06);
+
+  // Body thud (low sine)
+  const osc = ac.createOscillator();
+  osc.frequency.setValueAtTime(700, t);
+  osc.frequency.exponentialRampToValueAtTime(180, t + 0.05);
+  const g2 = ac.createGain();
+  g2.gain.setValueAtTime(vol * 0.5, t);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  osc.connect(g2); g2.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.05);
+}
+
+// Ball-ball ivory click — throttled to avoid break-shot overload
+function playBallHit(relVel) {
+  if (muted || !throttled('ballhit', 22)) return;
+  const ac = getAC(), t = ac.currentTime;
+  const vol = Math.min(Math.abs(relVel) / 12, 1);
+
+  const src  = ac.createBufferSource();
+  src.buffer = makeNoiseBuf(ac, 0.035);
+  const bp   = ac.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = 4000; bp.Q.value = 3;
+  const g1 = ac.createGain();
+  g1.gain.setValueAtTime(0.28 * vol, t);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+  src.connect(bp); bp.connect(g1); g1.connect(ac.destination);
+  src.start(t); src.stop(t + 0.035);
+
+  const osc = ac.createOscillator();
+  osc.frequency.setValueAtTime(900, t);
+  osc.frequency.exponentialRampToValueAtTime(250, t + 0.04);
+  const g2 = ac.createGain();
+  g2.gain.setValueAtTime(0.22 * vol, t);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  osc.connect(g2); g2.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.04);
+}
+
+// Cushion wall thump
+function playWallBounce(spd) {
+  if (muted || !throttled('wall', 40)) return;
+  const ac = getAC(), t = ac.currentTime;
+  const vol = Math.min(spd / 14, 1) * 0.45;
+
+  const osc = ac.createOscillator();
+  osc.frequency.setValueAtTime(160, t);
+  osc.frequency.exponentialRampToValueAtTime(70, t + 0.1);
+  const g = ac.createGain();
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.12);
+}
+
+// Ball drops into pocket
+function playPocket() {
+  if (muted) return;
+  const ac = getAC(), t = ac.currentTime;
+
+  const osc = ac.createOscillator();
+  osc.frequency.setValueAtTime(220, t);
+  osc.frequency.exponentialRampToValueAtTime(55, t + 0.18);
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.18);
+
+  const src  = ac.createBufferSource();
+  src.buffer = makeNoiseBuf(ac, 0.1);
+  const lp   = ac.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 350;
+  const gn = ac.createGain();
+  gn.gain.setValueAtTime(0.18, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  src.connect(lp); lp.connect(gn); gn.connect(ac.destination);
+  src.start(t); src.stop(t + 0.1);
+}
+
+// Scratch — descending wobbly tone
+function playScratch() {
+  if (muted) return;
+  const ac = getAC(), t = ac.currentTime;
+  const osc = ac.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(380, t);
+  osc.frequency.exponentialRampToValueAtTime(120, t + 0.35);
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.22, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+  osc.connect(g); g.connect(ac.destination);
+  osc.start(t); osc.stop(t + 0.35);
+}
+
+// Win fanfare — ascending arpeggio
+function playWin() {
+  if (muted) return;
+  const ac = getAC();
+  [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+    const t = ac.currentTime + i * 0.13;
+    const osc = ac.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.28, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    osc.connect(g); g.connect(ac.destination);
+    osc.start(t); osc.stop(t + 0.22);
+  });
+}
+
+// ─── 8. INPUT ─────────────────────────────────────────────────────────────────
 let isDragging = false;
 let aimAngle = 0, shootPower = 0;
 let dragStartX = 0, dragStartY = 0;
@@ -359,6 +520,7 @@ canvas.addEventListener('mouseup', e => {
   isDragging = false;
   if (gameOver || anyMoving() || inBallInHand) return;
   if (shootPower >= 0.5) {
+    playCueStrike(shootPower);
     cueBall.vx = Math.cos(aimAngle) * shootPower;
     cueBall.vy = Math.sin(aimAngle) * shootPower;
     pocketedThisTurn = [];
@@ -368,6 +530,7 @@ canvas.addEventListener('mouseup', e => {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'r' || e.key === 'R') initGame();
+  if (e.key === 'm' || e.key === 'M') muted = !muted;
 });
 
 // ─── 8. DRAW: TABLE ───────────────────────────────────────────────────────────
@@ -632,7 +795,15 @@ function drawHUD() {
   ctx.textAlign  = 'center';
   ctx.font       = '10px Courier New';
   ctx.fillStyle  = '#333';
-  ctx.fillText('Click & drag away from cue ball to set power  ·  Release to shoot  ·  R = restart', W / 2, H - 4);
+  ctx.fillText('Click & drag away from cue ball to set power  ·  Release to shoot  ·  R = restart  ·  M = mute', W / 2, H - 4);
+
+  // Mute indicator
+  if (muted) {
+    ctx.textAlign = 'right';
+    ctx.font      = 'bold 11px Courier New';
+    ctx.fillStyle = '#cc4444';
+    ctx.fillText('🔇 MUTED', W - 8, TY + TH + 20);
+  }
 }
 
 function drawBallTray() {
