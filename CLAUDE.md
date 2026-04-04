@@ -10,11 +10,12 @@ Open any `.html` file directly in a browser — no build step, server, or depend
 open shooter.html
 open tictactoe.html
 open slotmachine.html
+open pool.html
 ```
 
 ## Repository Structure
 
-Each game is a **single self-contained HTML file** with embedded CSS and JS — no external assets, frameworks, or dependencies. All rendering uses the Canvas 2D API (`fillRect`-based procedural pixel art) or plain DOM manipulation.
+Each game is a **single self-contained HTML file** with embedded CSS and JS — no external assets, frameworks, or dependencies. All rendering uses the Canvas 2D API (`fillRect`-based procedural pixel art) or plain DOM manipulation. All audio uses the Web Audio API (oscillator/noise-based, no external files).
 
 ## Git & GitHub Workflow
 
@@ -90,3 +91,34 @@ Free spins: `freeSpins > 0` suppresses bet deduction and jackpot contribution. S
 - `.cell.row-{0,1,2}` — per-row tint matches payline colors (blue/red/green).
 - `.cell.wild-sym` / `.cell.scatter-sym` — gold/cyan border overrides via `!important`.
 - `.cell.win-flash` — uses `--flash-color` CSS custom property set per-cell for per-payline colored flash.
+
+## pool.html Architecture
+
+Canvas-based two-player 8-ball pool. The JS is organized into 15 labeled sections:
+
+1. **CONSTANTS** — canvas (900×560), table geometry (`TX/TY/TW/TH`, `RAIL=36`, `PX/PY/PW/PH`), physics values (`R=12`, `FRICTION=0.987`, `POCKET_R=22`, `MAX_POWER=20`), `POCKETS[6]`, `COLORS[16]`.
+2. **CANVAS SETUP** — single `<canvas id="c">`, 2D context.
+3. **Ball class** — `num`, `x/y`, `vx/vy`, `pocketed`, `type` (`cue`/`solid`/`eight`/`stripe`). Methods: `applyFriction()`, `wallBounce()` (fires `playWallBounce` on hit), `draw()` (shadow, stripe-clip, number circle, specular highlight).
+4. **PHYSICS** — `ballBallCollide(a, b)`: separates overlapping balls, applies elastic equal-mass impulse along collision normal, fires `playBallHit(|rv|)`.
+5. **GAME STATE** — `balls[]`, `cueBall`, `currentPlayer`, `playerType[2]`, `gameOver`, `winner`, `inBallInHand`, `breakShot`, `pocketedThisTurn[]`, `msg`/`msgTimer`. `buildRack()` places the standard 5-row triangle (`RACK_ROWS`). `initGame()` resets all state.
+6. **POCKET DETECTION & RESOLVE** — `checkPockets()` fires `playPocket()` and appends to `pocketedThisTurn`. `resolveShot()` handles: 8-ball win/loss, scratch (ball-in-hand + `playScratch()`), solid/stripe type assignment on first post-break pot, and turn switching. `endGame(p, text)` fires `playWin()`.
+7. **AUDIO** — lazy `AudioContext` via `getAC()`; throttle helper `throttled(id, ms)` prevents sound spam. Six named sounds, all oscillator/noise-based: `playCueStrike(power)`, `playBallHit(relVel)`, `playWallBounce(spd)`, `playPocket()`, `playScratch()`, `playWin()`. `muted` flag toggled by M key.
+8. **INPUT** — `mousemove` updates `mouseX/Y` and `shootPower` while dragging; `mousedown` locks `aimAngle` or places ball-in-hand; `mouseup` fires `playCueStrike` + sets cue ball velocity. R restarts, M toggles mute.
+9. **DRAW: TABLE** — `roundRect()` helper; wood frame with grain lines, cushion rubber, felt radial gradient, three spots, dashed head string, pocket holes.
+10. **DRAW: CUE STICK** — dotted aim line; cue drawn at `angle + PI` (tip near ball, butt extending back); pullback offset = `shootPower * 2.8` capped at 65px; wrap ring and chalk tip.
+11. **DRAW: POWER BAR** — vertical bar right of table, green→yellow→red gradient fill proportional to `shootPower / MAX_POWER`.
+12. **DRAW: BALL-IN-HAND CURSOR** — semi-transparent white ball follows mouse when placing.
+13. **DRAW: HUD** — dark top/bottom panels; player name + type assignment + remaining count; mini ball tray (15 × 8px circles, striped where appropriate, dimmed when pocketed); status message with fade-out; mute indicator.
+14. **GAME LOOP** — `update()`: detects moving→stopped transition to call `resolveShot()`; per-frame: move + friction → `checkPockets()` → `wallBounce()` → `ballBallCollide()` (pocket check before wall bounce so corner balls sink cleanly). `draw()` composes all layers. `loop()` drives `requestAnimationFrame`.
+15. **BOOTSTRAP** — `initGame()` + `loop()`.
+
+### Physics update order (per frame, while moving)
+1. Move all balls (`pos += vel`) + apply friction
+2. `checkPockets()` — pocket detection runs first so corner-bound balls sink before wall bounce fires
+3. `wallBounce()` per ball
+4. `ballBallCollide()` all pairs
+
+### State machine
+`IDLE` → shooting (cue ball moving) → all balls stop → `resolveShot()` → `IDLE` or `BALL_IN_HAND` or `GAME_OVER`
+
+Type assignment: first object ball potted after the break determines solid/stripe for both players. On the break itself, no assignment is made regardless of what's potted.
